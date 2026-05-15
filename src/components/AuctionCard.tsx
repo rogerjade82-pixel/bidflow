@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuctionItem, AuctionStatus } from '../types';
 import { formatDistanceToNow } from 'date-fns';
-import { Gavel, Clock, Trophy, ExternalLink } from 'lucide-react';
+import { Gavel, Clock, Trophy, ExternalLink, Facebook } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -51,6 +51,19 @@ export const AuctionCard: React.FC<Props> = ({ auction, onBid }) => {
           )}>
             {isEnded ? "Closed" : "Live Now"}
           </span>
+        </div>
+        <div className="absolute top-4 right-4 flex gap-2">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              const url = `${window.location.origin}/auction/${auction.id}`;
+              window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank");
+            }}
+            className="p-2 bg-slate-900/60 backdrop-blur-md rounded-lg border border-slate-800 text-white hover:bg-[#1877F2] transition-colors"
+            title="Share on Facebook"
+          >
+            <Facebook className="w-3.5 h-3.5" />
+          </button>
         </div>
         {!isEnded && (
           <div className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1 bg-slate-900/60 backdrop-blur-md rounded border border-slate-800 text-rose-400 text-[10px] font-mono">

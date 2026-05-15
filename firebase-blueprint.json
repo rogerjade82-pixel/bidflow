@@ -9,6 +9,9 @@
         "displayName": { "type": "string" },
         "email": { "type": "string" },
         "photoURL": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "profileCompleted": { "type": "boolean" },
         "isAdmin": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },

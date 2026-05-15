@@ -11,6 +11,9 @@ export interface UserProfile {
   email: string;
   photoURL?: string;
   isAdmin?: boolean;
+  address?: string;
+  phone?: string;
+  profileCompleted?: boolean;
 }
 
 export interface AuctionItem {

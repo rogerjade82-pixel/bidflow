@@ -1,27 +1,52 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, facebookProvider, googleProvider } from '../lib/firebase';
+import { auctionService } from '../services/auctionService';
+import { UserProfile } from '../types';
 
 export interface AuthContextType {
   user: User | null;
+  profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
   signInWithFacebook: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      if (u) {
+        // Upsert basic info
+        await auctionService.upsertUserProfile(u.uid, {
+          displayName: u.displayName || 'Anonymous',
+          email: u.email || '',
+          photoURL: u.photoURL || ''
+        });
+        const userProfile = await auctionService.getUserProfile(u.uid);
+        setProfile(userProfile);
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
     });
+
     return unsubscribe;
   }, []);
+
+  const refreshProfile = async () => {
+    if (user) {
+      const userProfile = await auctionService.getUserProfile(user.uid);
+      setProfile(userProfile);
+    }
+  };
 
   const isAdmin = user?.email === 'rogerjade82@gmail.com';
 
@@ -57,5 +82,5 @@ export function useAuth() {
     }
   };
 
-  return { user, loading, isAdmin, signInWithFacebook, signInWithGoogle, logout };
+  return { user, profile, loading, isAdmin, signInWithFacebook, signInWithGoogle, logout, refreshProfile };
 }

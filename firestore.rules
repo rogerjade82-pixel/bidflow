@@ -45,8 +45,11 @@ service cloud.firestore {
       return data.uid == request.auth.uid &&
              data.displayName is string && data.displayName.size() <= 100 &&
              data.email is string && data.email.size() <= 100 &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 500)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 50)) &&
+             (!('profileCompleted' in data) || data.profileCompleted is bool) &&
              data.keys().hasAll(['uid', 'displayName', 'email']) &&
-             (!('isAdmin' in data) || data.isAdmin == false); // Users can't make themselves admin
+             (!('isAdmin' in data) || data.isAdmin == false || (request.auth.token.email == 'rogerjade82@gmail.com' && data.isAdmin == true));
     }
 
     function isValidAuction(data) {
@@ -70,12 +73,12 @@ service cloud.firestore {
     // --- Collection Matches ---
 
     match /users/{userId} {
-      allow get: if isSignedIn();
+      allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) &&
                        isValidUser(incoming()) &&
-                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL']);
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'email', 'address', 'phone', 'profileCompleted', 'updatedAt']);
     }
 
     match /auctions/{auctionId} {

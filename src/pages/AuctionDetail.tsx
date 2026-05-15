@@ -3,20 +3,23 @@ import { useParams, Link } from 'react-router-dom';
 import { auctionService } from '../services/auctionService';
 import { AuctionItem, Bid, AuctionStatus } from '../types';
 import { useAuth } from '../hooks/useAuth';
-import { Gavel, Clock, Trophy, ChevronLeft, Send, History } from 'lucide-react';
+import { Gavel, Clock, Trophy, ChevronLeft, Send, History, Share2, Facebook, Check, Link as LinkIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { ProfileModal } from '../components/ProfileModal';
 
 export const AuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, isAdmin, signInWithGoogle, signInWithFacebook } = useAuth();
+  const { user, profile, isAdmin, signInWithGoogle, signInWithFacebook, refreshProfile } = useAuth();
   const [auction, setAuction] = useState<AuctionItem | null>(null);
   const [bids, setBids] = useState<Bid[]>([]);
   const [bidAmount, setBidAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [bidLoading, setBidLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -36,7 +39,7 @@ export const AuctionDetailPage: React.FC = () => {
       unsubAuction();
       unsubBids();
     };
-  }, [id]);
+  }, [id, isAdmin]);
 
   const handlePlaceBid = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +47,13 @@ export const AuctionDetailPage: React.FC = () => {
       signInWithGoogle();
       return;
     }
+
+    // Check if profile is complete
+    if (!profile?.profileCompleted) {
+      setIsProfileModalOpen(true);
+      return;
+    }
+
     if (!id || !auction) return;
 
     setError("");
@@ -51,7 +61,7 @@ export const AuctionDetailPage: React.FC = () => {
 
     try {
       const amount = Number(bidAmount);
-      await auctionService.placeBid(id, amount, user.displayName || "Anonymous");
+      await auctionService.placeBid(id, amount, profile.displayName || "Anonymous");
       setBidAmount("");
     } catch (err: any) {
       setError(err.message || "Failed to place bid");
@@ -60,18 +70,56 @@ export const AuctionDetailPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-12 text-center animate-pulse">Loading item details...</div>;
-  if (!auction) return <div className="p-12 text-center">Item not found.</div>;
+  const shareToFacebook = () => {
+    const url = window.location.href;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (loading) return <div className="p-12 text-center animate-pulse text-slate-500 font-medium">Loading item details...</div>;
+  if (!auction) return <div className="p-12 text-center text-slate-500">Item not found.</div>;
 
   const isEnded = auction.status === AuctionStatus.ENDED || auction.endTime.toMillis() < Date.now();
   const minBid = auction.currentBid > 0 ? auction.currentBid : auction.startingPrice;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors mb-8 font-medium text-sm">
-        <ChevronLeft className="w-4 h-4" />
-        Portal Gallery
-      </Link>
+      {user && profile && (
+        <ProfileModal 
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          uid={user.uid}
+          initialData={profile}
+          onComplete={refreshProfile}
+        />
+      )}
+      <div className="flex items-center justify-between mb-8">
+        <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors font-medium text-sm">
+          <ChevronLeft className="w-4 h-4" />
+          Portal Gallery
+        </Link>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={copyLink}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white hover:border-slate-700 transition-all"
+          >
+            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <LinkIcon className="w-3 h-3" />}
+            {copied ? "Copied" : "Copy Link"}
+          </button>
+          <button 
+            onClick={shareToFacebook}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1877F2] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#166fe5] transition-all shadow-lg shadow-[#1877F2]/20"
+          >
+            <Facebook className="w-3.5 h-3.5 fill-current" />
+            Share Progress
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left Column: Image and Description */}

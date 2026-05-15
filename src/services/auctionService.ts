@@ -136,5 +136,71 @@ export const auctionService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `auctions/${id}`);
     }
+  },
+
+  async getUserProfile(uid: string) {
+    const userRef = doc(db, 'users', uid);
+    try {
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        return { uid: userDoc.id, ...userDoc.data() } as any;
+      }
+      return null;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, `users/${uid}`);
+    }
+  },
+
+  async updateUserProfile(uid: string, data: any) {
+    const userRef = doc(db, 'users', uid);
+    try {
+      await updateDoc(userRef, {
+        ...data,
+        profileCompleted: true,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      // If doc doesn't exist, set it
+      try {
+        await runTransaction(db, async (transaction) => {
+          transaction.set(userRef, {
+            uid,
+            ...data,
+            profileCompleted: true,
+            isAdmin: auth.currentUser?.email === 'rogerjade82@gmail.com',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        });
+      } catch (innerError) {
+        handleFirestoreError(error, OperationType.WRITE, `users/${uid}`);
+      }
+    }
+  },
+
+  async upsertUserProfile(uid: string, data: any) {
+    const userRef = doc(db, 'users', uid);
+    try {
+       const userDoc = await getDoc(userRef);
+       if (userDoc.exists()) {
+         await updateDoc(userRef, { ...data, updatedAt: serverTimestamp() });
+       } else {
+         const { photoURL, email, displayName } = data;
+         await runTransaction(db, async (transaction) => {
+            transaction.set(userRef, {
+              uid,
+              email,
+              displayName,
+              photoURL,
+              profileCompleted: false,
+              isAdmin: email === 'rogerjade82@gmail.com',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+         });
+       }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `users/${uid}`);
+    }
   }
 };

@@ -8,7 +8,7 @@ import { Gavel, User, LayoutDashboard, LogOut, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const Navbar = () => {
-  const { user, isAdmin, signInWithGoogle, logout } = useAuth();
+  const { user, profile, isAdmin, signInWithGoogle, logout } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
@@ -38,7 +38,12 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center gap-4 pl-6 border-l border-slate-800">
                 <div className="text-right">
-                  <p className="text-xs font-semibold leading-none text-white">{user.displayName}</p>
+                  <div className="flex items-center gap-2 justify-end">
+                    {profile && !profile.profileCompleted && (
+                      <span className="w-2 h-2 rounded-full bg-amber-500" title="Incomplete Profile"></span>
+                    )}
+                    <p className="text-xs font-semibold leading-none text-white">{user.displayName}</p>
+                  </div>
                   <button onClick={logout} className="text-[10px] text-slate-500 hover:text-rose-400 transition-colors uppercase tracking-widest mt-1">
                     Sign Out
                   </button>
