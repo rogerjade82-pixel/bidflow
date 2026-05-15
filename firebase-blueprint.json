@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "isAdmin": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email"]
+    },
+    "AuctionItem": {
+      "title": "Auction Item",
+      "description": "An item being auctioned.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "startingPrice": { "type": "number" },
+        "currentBid": { "type": "number" },
+        "highestBidderId": { "type": "string" },
+        "highestBidderName": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["active", "ended"] },
+        "winnerId": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "startingPrice", "endTime", "status", "createdBy"]
+    },
+    "Bid": {
+      "title": "Bid",
+      "description": "A bid placed on an auction item.",
+      "type": "object",
+      "properties": {
+        "auctionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "amount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["auctionId", "userId", "userName", "amount", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles collection."
+    },
+    "/auctions/{auctionId}": {
+      "schema": "AuctionItem",
+      "description": "Collection of auction items."
+    },
+    "/auctions/{auctionId}/bids/{bidId}": {
+      "schema": "Bid",
+      "description": "Bids for a specific auction item."
+    }
+  }
+}

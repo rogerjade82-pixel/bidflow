@@ -1,0 +1,8 @@
+{
+  "name": "AuctionLive",
+  "description": "A real-time bidding system with Facebook login, live countdowns, and automatic winner selection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
