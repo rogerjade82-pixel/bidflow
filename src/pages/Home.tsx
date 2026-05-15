@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auctionService } from '../services/auctionService';
 import { AuctionItem } from '../types';
 import { AuctionCard } from '../components/AuctionCard';
@@ -6,6 +7,7 @@ import { Gavel, Search, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate();
   const [auctions, setAuctions] = useState<AuctionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -77,7 +79,7 @@ export const HomePage: React.FC = () => {
                 key={`auction-${auction.id}`} 
                 auction={auction} 
                 onBid={(id) => {
-                  window.location.href = `/auction/${id}`;
+                  navigate(`/auction/${id}`);
                 }}
               />
             ))}

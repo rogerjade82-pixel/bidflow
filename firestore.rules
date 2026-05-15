@@ -52,9 +52,10 @@ service cloud.firestore {
     function isValidAuction(data) {
       return data.title is string && data.title.size() <= 200 &&
              data.startingPrice is number && data.startingPrice >= 0 &&
-             data.endTime is timestamp && data.endTime > request.time &&
+             data.endTime is timestamp && 
+             (data.status == 'ended' || data.endTime > request.time) &&
              data.status in ['active', 'ended'] &&
-             data.createdBy == request.auth.uid;
+             data.createdBy is string;
     }
 
     function isValidBid(data, auctionData) {

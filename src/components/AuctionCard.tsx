@@ -85,7 +85,7 @@ export const AuctionCard: React.FC<Props> = ({ auction, onBid }) => {
           className={cn(
             "w-full py-3 rounded-lg text-xs font-bold mt-4 transition-all uppercase tracking-widest flex items-center justify-center gap-2",
             isEnded 
-              ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700" 
+              ? "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700" 
               : "bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-900/20 border border-indigo-500/50"
           )}
         >

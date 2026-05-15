@@ -10,7 +10,7 @@ import { cn } from '../lib/utils';
 
 export const AuctionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, signInWithGoogle, signInWithFacebook } = useAuth();
+  const { user, isAdmin, signInWithGoogle, signInWithFacebook } = useAuth();
   const [auction, setAuction] = useState<AuctionItem | null>(null);
   const [bids, setBids] = useState<Bid[]>([]);
   const [bidAmount, setBidAmount] = useState("");
@@ -24,8 +24,8 @@ export const AuctionDetailPage: React.FC = () => {
       setAuction(data);
       setLoading(false);
 
-      // Auto-finalize if time passed but still marked active
-      if (data && data.status === AuctionStatus.ACTIVE && data.endTime.toMillis() < Date.now()) {
+      // Auto-finalize if time passed but still marked active (Admin only or system check)
+      if (isAdmin && data && data.status === AuctionStatus.ACTIVE && data.endTime.toMillis() < Date.now()) {
         auctionService.endAuction(id).catch(console.error);
       }
     });
@@ -223,7 +223,7 @@ export const AuctionDetailPage: React.FC = () => {
                         <div>
                           <p className="font-bold text-xs text-white">{bid.userName}</p>
                           <p className="text-[9px] text-slate-500 font-medium">
-                            {formatDistanceToNow(bid.createdAt.toMillis(), { addSuffix: true })}
+                            {bid.createdAt ? formatDistanceToNow(bid.createdAt.toMillis(), { addSuffix: true }) : "Just now"}
                           </p>
                         </div>
                       </div>
